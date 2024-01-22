@@ -1,5 +1,6 @@
 const User = require("../models/User.js");
 const bcrypt = require("bcrypt");
+const jwt = require ("jsonwebtoken");
 
 const authController = {
     registerUser: async (req, res) => {
@@ -31,7 +32,16 @@ const authController = {
             if (!validPassword) {
                 res.status(404).json("Wrong password");
             }
-            res.status(200).json(user);
+            if (user && validPassword){
+                const accessToken = jwt.sign({
+                    id: user.id,
+                    admin : user.admin
+                },
+                process.env.JWT_ACCESS_KEY,
+                {expiresIn:"30s" }
+                );
+                res.status(200).json({user,accessToken});
+            }
         }
         catch (err) {
             res.status(500).json(err);
